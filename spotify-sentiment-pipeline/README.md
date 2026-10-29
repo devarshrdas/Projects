@@ -6,12 +6,16 @@ sqlite holds the data, python scores and tags each review, streamlit shows the r
 
 ## run it
 
+from this folder, in order:
+
 ```
-pip install -r requirements.txt
-python3 collect.py --play-count 30000
-python3 process.py
-streamlit run app.py
+python -m pip install -r requirements.txt
+python collect.py --play-count 30000
+python process.py
+python -m streamlit run app.py
 ```
+
+if `python` isn't found on windows, use `py` instead. on mac or linux, use `python3`.
 
 ## files
 
