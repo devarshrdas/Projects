@@ -3,3 +3,4 @@ sqlalchemy
 google-play-scraper
 vaderSentiment
 streamlit
+altair
