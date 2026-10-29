@@ -4,6 +4,15 @@ finds which features draw the most complaints in spotify's app store and google 
 
 sqlite holds the data, python scores and tags each review, streamlit shows the results.
 
+## tech stack
+
+- **language:** python
+- **database:** sqlite, queried with sql window functions
+- **data collection:** apple's itunes review feed (app store), `google-play-scraper` (google play)
+- **data handling:** `pandas`, `sqlalchemy`
+- **nlp:** `vaderSentiment` for sentiment, regex keyword rules for feature tags
+- **dashboard:** `streamlit`
+
 ## run it
 
 from this folder, in order:
