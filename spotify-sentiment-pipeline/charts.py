@@ -229,3 +229,26 @@ def version_compare(df):
     labels = alt.Chart(d).mark_text(dy=-8, fontSize=12, color=INK_2).encode(
         x=x, y=y, text="tip:N", tooltip=tooltip)
     return finish(cols + labels, height=280)
+
+
+def reply_rate(df):
+    """Columns: share of reviews with a developer reply, by star rating."""
+    d = df.copy()
+    d["stars"] = d["rating"].map(lambda r: STARS[int(r) - 1])
+    d["tip"] = d["reply_rate"].map(lambda v: f"{v:.0%}" if v >= 0.01 else f"{v:.1%}")
+    hover = _hover("stars")
+    x = alt.X("stars:N", sort=STARS, title=None,
+              axis=alt.Axis(labelAngle=0, labelColor=INK_2, labelFontSize=12, ticks=False,
+                            domainColor=AXIS, labelPadding=8))
+    y = alt.Y("reply_rate:Q", title=None, axis=None,
+              scale=alt.Scale(domain=[0, max(0.5, d["reply_rate"].max() * 1.25)]))
+    tooltip = [alt.Tooltip("reply_rate:Q", title="Replied to", format=".1%"),
+               alt.Tooltip("stars:N", title="Rating"),
+               alt.Tooltip("replied:Q", title="Replies", format=","),
+               alt.Tooltip("reviews:Q", title="Reviews", format=",")]
+    cols = alt.Chart(d).mark_bar(size=24, cornerRadiusEnd=4, color=ACCENT).encode(
+        x=x, y=y, opacity=alt.condition(hover, alt.value(0.75), alt.value(1)),
+        tooltip=tooltip).add_params(hover)
+    labels = alt.Chart(d).mark_text(dy=-8, fontSize=12, color=INK_2).encode(
+        x=x, y=y, text="tip:N", tooltip=tooltip)
+    return finish(cols + labels, height=260)

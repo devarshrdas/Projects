@@ -221,6 +221,47 @@ def render_time_and_versions():
                              "neg_share": "Share negative", "avg_rating": "Average rating"})
 
 
+# ---------------------------------------------------------------- replies
+
+def render_replies():
+    st.header("How Spotify replies")
+    rep = q.replies()
+    hours = q.reply_hours()
+    low = rep[rep["rating"] <= 2]
+    st.caption(
+        f"Google Play only; the App Store feed does not include replies. Spotify replied to "
+        f"{low.replied.sum() / low.reviews.sum():.0%} of 1 and 2 star reviews and to almost no "
+        f"5 star reviews, so replies go where the complaints are.")
+    left, right = st.columns([2, 1], gap="large")
+    with left:
+        st.subheader("Share of reviews with a reply")
+        chart(charts.reply_rate(rep))
+        view_data(rep, {"rating": "Stars", "reviews": "Reviews", "replied": "Replies",
+                        "reply_rate": "Reply rate"})
+    with right:
+        st.subheader("Time to reply")
+        st.metric("Median", f"{hours.median():.0f} hours", border=True,
+                  help="Time between the review and Spotify's reply")
+        st.metric("Within 24 hours", f"{(hours <= 24).mean():.0%}", border=True,
+                  help=f"Share of {len(hours):,} replies")
+        st.caption(f"A quarter of replies arrive within {hours.quantile(0.25) * 60:.0f} minutes, "
+                   f"three quarters within {hours.quantile(0.75):.0f} hours.")
+
+
+# ---------------------------------------------------------------- method
+
+def render_method():
+    vader = q.sentiment_by_rating().set_index("rating")["vader"]
+    with st.expander("How this was measured"):
+        st.markdown(f"""
+- **Sources:** Google Play reviews come from the `google-play-scraper` package, newest first. App Store reviews come from Apple's public review feed, which only serves the 500 newest and 500 most helpful reviews.
+- **Negative:** a review rated 1 or 2 stars. The star rating is the main signal on this page.
+- **Features:** keyword rules in `process.py`. They matched {q.tagged_share():.0%} of reviews. A review can match several features, the rules miss some phrasings, and broad words like "pay" catch some reviews that are about something else.
+- **Sentiment score:** VADER averages {vader.get(1, float('nan')):.2f} on 1 star reviews and {vader.get(5, float('nan')):.2f} on 5 star reviews, on a scale from -1 to 1. It reads many short or sarcastic complaints as neutral, which is why the charts use star ratings instead.
+- **Reply time:** hours between a review and Spotify's reply, from the timestamps Google Play shows.
+""")
+
+
 # ---------------------------------------------------------------- page
 
 def main():
@@ -235,6 +276,8 @@ def main():
     render_features()
     render_ratings()
     render_time_and_versions()
+    render_replies()
+    render_method()
 
 
 main()
