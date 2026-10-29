@@ -11,7 +11,7 @@ sqlite holds the data, python scores and tags each review, streamlit shows the r
 - **data collection:** apple's itunes review feed (app store), `google-play-scraper` (google play)
 - **data handling:** `pandas`, `sqlalchemy`
 - **nlp:** `vaderSentiment` for sentiment, regex keyword rules for feature tags
-- **dashboard:** `streamlit`
+- **dashboard:** `streamlit`, `altair` for charts
 
 ## run it
 
@@ -30,7 +30,21 @@ if `python` isn't found on windows, use `py` instead. on mac or linux, use `pyth
 
 - `collect.py` pulls reviews into `data/spotify_reviews.db` (table `reviews`)
 - `process.py` adds `review_sentiment` (vader score) and `review_features` (keyword tags like ads, pricing, shuffle, crashes)
-- `app.py` is the dashboard: sentiment by day, rolling 7-day negative reviews, features ranked by complaints
+- `app.py` lays out the dashboard
+- `queries.py` holds the sql behind each section
+- `charts.py` builds the altair charts
+- `.streamlit/config.toml` sets the theme. it only loads when you run streamlit from this folder
+
+## dashboard
+
+- headline numbers and a short list of findings, written from the data
+- complaints by feature: how many negative reviews mention each one, and how often a mention is negative
+- the actual negative reviews behind any feature
+- how ratings split in each store
+- negative share by day and by app version
+- how often and how fast spotify replies
+
+every chart has a "view data" table under it
 
 ## notes
 
