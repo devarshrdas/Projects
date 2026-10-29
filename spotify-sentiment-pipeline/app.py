@@ -168,6 +168,59 @@ def render_explorer(source, feats):
             st.markdown(md_escape(r.review_text))
 
 
+# ---------------------------------------------------------------- ratings
+
+def render_ratings():
+    st.header("How ratings split")
+    split = q.rating_split()
+    stores = [q.STORES[s] for s in q.STORES if s in set(split["source"])]
+    gp = split[split["source"] == "google_play"].set_index("rating")["share"]
+    if len(gp) == 5:
+        st.caption(
+            f"Ratings are polarized. On Google Play, {gp[5]:.0%} of reviews give 5 stars and "
+            f"{gp[1]:.0%} give 1 star, while only {gp[2] + gp[3] + gp[4]:.0%} land in between. "
+            "Bars are centered on the middle of 3 stars, so negative reviews extend left.")
+    chart(charts.rating_split(split, stores))
+    view_data(split.sort_values(["store", "rating"]),
+              {"store": "Store", "rating": "Stars", "reviews": "Reviews", "share": "Share"})
+
+
+# ---------------------------------------------------------------- time and version
+
+def render_time_and_versions():
+    st.header("Over time and by version")
+    st.caption("Google Play only. The App Store sample is its newest and most helpful "
+               "reviews, so it does not form a continuous timeline.")
+    day = q.daily()
+    vers = q.versions()
+    avg = day["negative"].sum() / day["reviews"].sum()
+
+    left, right = st.columns(2, gap="large")
+    with left:
+        st.subheader("Negative share by day")
+        st.caption(f"Between {day.neg_share.min():.0%} and {day.neg_share.max():.0%} each day, "
+                   f"with no clear direction over one week. The gray line is the week's "
+                   f"average, {avg:.0%}.")
+        chart(charts.daily_trend(day, avg))
+        view_data(day.assign(day=day["day"].dt.date),
+                  {"day": "Day", "reviews": "Reviews", "negative": "Negative",
+                   "neg_share": "Share negative"})
+    with right:
+        st.subheader("Negative share by app version")
+        if len(vers) >= 2:
+            new, prev = vers.iloc[-1], vers.iloc[-2]
+            diff = (new.neg_share - prev.neg_share) * 100
+            direction = "more" if diff >= 0 else "fewer"
+            st.caption(f"Version {new.version} has {abs(diff):.0f} points {direction} negative "
+                       f"reviews than {prev.version}. Versions with at least 100 reviews.")
+        else:
+            st.caption("Versions with at least 100 reviews.")
+        if len(vers):
+            chart(charts.version_compare(vers))
+            view_data(vers, {"app_version": "Version", "reviews": "Reviews",
+                             "neg_share": "Share negative", "avg_rating": "Average rating"})
+
+
 # ---------------------------------------------------------------- page
 
 def main():
@@ -180,6 +233,8 @@ def main():
     render_header(q.overview())
     render_findings()
     render_features()
+    render_ratings()
+    render_time_and_versions()
 
 
 main()
