@@ -13,6 +13,13 @@ Finds which product features draw the most complaints in Spotify's app reviews, 
 3. **`app.py`** is a Streamlit dashboard: sentiment by day, a rolling 7-day count of negative reviews, features ranked by negative reviews, and the most helpful negative reviews.
 
 ## Run it
+# customer sentiment pipeline
+
+finds which features draw the most complaints in spotify's app store and google play reviews, and whether sentiment is shifting over time.
+
+sqlite holds the data, python scores and tags each review, streamlit shows the results.
+
+## run it
 
 ```
 pip install -r requirements.txt
@@ -50,3 +57,15 @@ FROM daily ORDER BY source, day;
 - VADER scores short, informal reviews near zero, so the star rating is the better negative label.
 - Apple's feed returns at most about 500 reviews per sort order, so the App Store data is thin over time.
 - Only the sample (`data/sample_reviews.csv`, 100 rows per source) is committed. Run `collect.py` to build the full dataset. Check each store's terms before publishing review text.
+## files
+
+- `collect.py` pulls reviews into `data/spotify_reviews.db` (table `reviews`)
+- `process.py` adds `review_sentiment` (vader score) and `review_features` (keyword tags like ads, pricing, shuffle, crashes)
+- `app.py` is the dashboard: sentiment by day, rolling 7-day negative reviews, features ranked by complaints
+
+## notes
+
+- negative means 1 or 2 stars
+- the app store feed caps at about 500 reviews per sort order, so its time series is thin
+- keyword rules tag about a third of reviews. zero-shot classification would cover more
+- only `data/sample_reviews.csv` is committed. run `collect.py` for the full set
