@@ -1,4 +1,4 @@
-# customer sentiment pipeline
+# spotify customer sentiment pipeline
 
 finds which features draw the most complaints in spotify's app store and google play reviews, and whether sentiment is shifting over time.
 
