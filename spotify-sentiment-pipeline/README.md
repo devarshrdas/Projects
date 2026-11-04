@@ -28,6 +28,12 @@ if `python` isn't found on windows, use `py` instead. on mac or linux, use `pyth
 
 the first `collect.py` run pulls up to `--play-count` google play reviews, which takes about 12 seconds for 30,000. after that, running `python collect.py` only adds reviews newer than the ones already stored, usually in a second or two. run `python process.py` again after each update. to start over, use `python collect.py --full --play-count 30000`.
 
+you can also skip straight to `python -m streamlit run app.py`. if there's no database, the app collects and processes 30,000 reviews itself, which takes about 20 seconds. it adds new reviews on its own once the data is more than a day old.
+
+## deploy
+
+on streamlit community cloud, create an app from this repo with branch `main` and main file path `spotify-sentiment-pipeline/app.py`. the app builds its own data on the first visit, so nothing else needs to be committed. community cloud reads the theme from `.streamlit/config.toml` at the root of the repo.
+
 ## files
 
 - `collect.py` pulls reviews into `data/spotify_reviews.db` (table `reviews`)
@@ -35,7 +41,7 @@ the first `collect.py` run pulls up to `--play-count` google play reviews, which
 - `app.py` lays out the dashboard
 - `queries.py` holds the sql behind each section
 - `charts.py` builds the altair charts
-- `.streamlit/config.toml` sets the theme. it only loads when you run streamlit from this folder
+- `.streamlit/config.toml` sets the theme when you run streamlit from this folder. the copy at the repo root is the one community cloud uses
 
 ## dashboard
 

@@ -1,10 +1,17 @@
 import re
+import threading
+import time
 
 import pandas as pd
 import streamlit as st
 
 import charts
+import collect
+import process
 import queries as q
+
+FIRST_COLLECTION = 30000
+REFRESH_AFTER = 24 * 3600
 
 st.set_page_config(page_title="spotify review sentiment", layout="wide")
 
@@ -246,7 +253,52 @@ def render_method():
 """)
 
 
+@st.cache_resource
+def build_lock():
+    return threading.Lock()
+
+
+def needs_build():
+    if q.status():
+        return "missing"
+    if time.time() - q.DB.stat().st_mtime > REFRESH_AFTER:
+        return "stale"
+    return None
+
+
+def ensure_data():
+    if not needs_build():
+        return
+    lock = build_lock()
+    if not lock.acquire(blocking=False):
+        with st.spinner("reviews are being collected. this takes about half a minute."):
+            lock.acquire()
+    try:
+        need = needs_build()
+        if not need:
+            return
+        label = ("collecting reviews for the first time. this takes about half a minute."
+                 if need == "missing" else "adding the latest reviews.")
+        try:
+            with st.status(label) as box:
+                box.write("downloading reviews from google play and the app store")
+                collect.run(play_count=FIRST_COLLECTION)
+                box.write("scoring sentiment and tagging features")
+                process.main()
+                box.update(label="reviews ready", state="complete")
+        except Exception as exc:
+            if need == "missing" or q.status():
+                st.error(f"couldn't collect reviews: {exc}")
+                st.stop()
+            st.warning(f"couldn't add the latest reviews, showing the stored ones. ({exc})")
+            return
+    finally:
+        lock.release()
+    st.rerun()
+
+
 def main():
+    ensure_data()
     problem = q.status()
     if problem:
         st.title("spotify review sentiment")

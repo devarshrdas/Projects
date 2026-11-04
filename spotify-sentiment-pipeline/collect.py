@@ -125,14 +125,9 @@ def open_db(full):
     return db
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--play-count", type=int, default=5000)
-    ap.add_argument("--full", action="store_true")
-    args = ap.parse_args()
+def run(play_count=5000, full=False):
     start = time.time()
-
-    db = open_db(args.full)
+    db = open_db(full)
     known = {r[0] for r in db.execute("SELECT review_id FROM reviews WHERE source = 'google_play'")}
     latest = db.execute("SELECT MAX(review_date) FROM reviews WHERE source = 'google_play'").fetchone()[0]
     since = datetime.fromisoformat(latest) if latest else None
@@ -140,7 +135,7 @@ def main():
 
     with ThreadPoolExecutor(max_workers=1) as pool:
         apple = pool.submit(fetch_apple)
-        play = fetch_play(1_000_000 if since else args.play_count, since)
+        play = fetch_play(1_000_000 if since else play_count, since)
         rows = apple.result() + play
 
     db.executemany(
@@ -158,6 +153,15 @@ def main():
     new = sum(r["review_id"] not in known for r in play)
     print(f"done in {time.time() - start:.1f}s: {new:,} new google play reviews, "
           f"{total:,} reviews stored")
+    return new
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--play-count", type=int, default=5000)
+    ap.add_argument("--full", action="store_true")
+    args = ap.parse_args()
+    run(args.play_count, args.full)
 
 
 if __name__ == "__main__":
