@@ -1,7 +1,3 @@
-"""Spotify review sentiment dashboard.
-
-Run after collect.py and process.py:  python -m streamlit run app.py
-"""
 import re
 
 import pandas as pd
@@ -24,7 +20,6 @@ h2 {margin-top: 1.75rem;}
 
 
 def lower_first(text):
-    """Lowercase the first letter only, so acronyms like UI keep their case."""
     return text[:1].lower() + text[1:]
 
 
@@ -33,7 +28,6 @@ def fmt_day(ts):
 
 
 def md_escape(text):
-    """Show review text literally; reviews are user content, not markdown."""
     return re.sub(r"([\\`*_{}\[\]()#+\-.!|>~<$])", r"\\\1", str(text))
 
 
@@ -45,8 +39,6 @@ def view_data(df, columns):
     with st.expander("View data"):
         st.dataframe(df[list(columns)].rename(columns=columns), hide_index=True)
 
-
-# ---------------------------------------------------------------- header
 
 def render_header(ov):
     gp = ov.set_index("source").loc["google_play"]
@@ -70,8 +62,6 @@ def render_header(ov):
     c4.metric("Median reply time", f"{hours.median():.0f} hours", border=True,
               help=f"Google Play, based on {len(hours):,} developer replies")
 
-
-# ---------------------------------------------------------------- findings
 
 def render_findings():
     feats = q.feature_stats("google_play")
@@ -114,8 +104,6 @@ def render_findings():
         st.caption("Based on Google Play, the larger and more recent sample.")
         st.markdown("\n".join(f"- {line}" for line in lines))
 
-
-# ---------------------------------------------------------------- features
 
 def render_features():
     st.header("Complaints by feature")
@@ -168,8 +156,6 @@ def render_explorer(source, feats):
             st.markdown(md_escape(r.review_text))
 
 
-# ---------------------------------------------------------------- ratings
-
 def render_ratings():
     st.header("How ratings split")
     split = q.rating_split()
@@ -184,8 +170,6 @@ def render_ratings():
     view_data(split.sort_values(["store", "rating"]),
               {"store": "Store", "rating": "Stars", "reviews": "Reviews", "share": "Share"})
 
-
-# ---------------------------------------------------------------- time and version
 
 def render_time_and_versions():
     st.header("Over time and by version")
@@ -221,8 +205,6 @@ def render_time_and_versions():
                              "neg_share": "Share negative", "avg_rating": "Average rating"})
 
 
-# ---------------------------------------------------------------- replies
-
 def render_replies():
     st.header("How Spotify replies")
     rep = q.replies()
@@ -248,8 +230,6 @@ def render_replies():
                    f"three quarters within {hours.quantile(0.75):.0f} hours.")
 
 
-# ---------------------------------------------------------------- method
-
 def render_method():
     vader = q.sentiment_by_rating().set_index("rating")["vader"]
     with st.expander("How this was measured"):
@@ -261,8 +241,6 @@ def render_method():
 - **Reply time:** hours between a review and Spotify's reply, from the timestamps Google Play shows.
 """)
 
-
-# ---------------------------------------------------------------- page
 
 def main():
     problem = q.status()

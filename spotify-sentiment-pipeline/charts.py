@@ -1,9 +1,3 @@
-"""Altair chart builders for the dashboard.
-
-Colors come from a validated palette: one accent blue for the series that
-carries the point, a warm gray for context, and a red to blue diverging
-scale for star ratings. Text always uses ink colors, never series colors.
-"""
 import altair as alt
 import pandas as pd
 
@@ -21,7 +15,6 @@ ROW = 30
 
 
 def finish(chart, height):
-    """Shared chrome: surface, type, hairline grid, no view border."""
     return (
         chart.properties(height=height, background=SURFACE,
                          padding={"left": 6, "right": 16, "top": 24, "bottom": 6})
@@ -42,7 +35,6 @@ def _hover(field):
 
 
 def feature_volume(df, highlight=2):
-    """Horizontal bars: negative reviews per feature, top features in the accent."""
     d = df.reset_index(drop=True).copy()
     d["emph"] = d.index < highlight
     d["tip"] = d["negative"].map("{:,}".format)
@@ -73,7 +65,6 @@ def feature_volume(df, highlight=2):
 
 
 def feature_severity(df, baseline, threshold=0.6, min_mentions=20):
-    """Horizontal bars: share of mentions that are negative, against a baseline rule."""
     d = df[df["mentions"] >= min_mentions].sort_values("neg_share", ascending=False).copy()
     d["emph"] = d["neg_share"] >= threshold
     d["tip"] = d["neg_share"].map("{:.0%}".format)
@@ -113,7 +104,6 @@ STAR_COLORS = ["#c63b3a", "#ef9c9a", "#e1e0d9", "#86b6ef", "#2a78d6"]
 
 
 def rating_split(df, store_order):
-    """Diverging stacked bar per store, centered on the middle of 3 stars."""
     rows = []
     for store in store_order:
         g = df[df["store"] == store].set_index("rating")
@@ -162,13 +152,11 @@ def rating_split(df, store_order):
         {"not": dark}).mark_text(fontSize=12, color=INK).encode(
         y=y, x="mid:Q", text="tip:N", tooltip=tooltip)
     zero = alt.Chart(pd.DataFrame({"x": [0]})).mark_rule(color=INK_2, strokeWidth=1).encode(x="x:Q")
-    # Streamlit fits the whole chart into this height, legend and axis included.
     return finish(zero + bars + text_on_dark + text_on_light,
                   height=len(store_order) * 52 + 90)
 
 
 def daily_trend(df, average):
-    """Line of daily negative share with a crosshair, an average rule and an end label."""
     d = df.copy()
     d["tip"] = d["neg_share"].map("{:.0%}".format)
     d["is_last"] = d["day"] == d["day"].max()
@@ -203,7 +191,6 @@ def daily_trend(df, average):
 
 
 def version_compare(df):
-    """Columns of negative share per app version, newest in the accent."""
     d = df.reset_index(drop=True).copy()
     d["emph"] = d.index == len(d) - 1
     d["tip"] = d["neg_share"].map("{:.0%}".format)
@@ -232,7 +219,6 @@ def version_compare(df):
 
 
 def reply_rate(df):
-    """Columns: share of reviews with a developer reply, by star rating."""
     d = df.copy()
     d["stars"] = d["rating"].map(lambda r: STARS[int(r) - 1])
     d["tip"] = d["reply_rate"].map(lambda v: f"{v:.0%}" if v >= 0.01 else f"{v:.1%}")

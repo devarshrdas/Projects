@@ -1,11 +1,3 @@
-"""Score sentiment and tag product features for each review.
-
-Reads the `reviews` table in data/spotify_reviews.db and writes two new tables:
-  review_sentiment (review_id, sentiment)   VADER compound score, -1 to 1
-  review_features  (review_id, feature)     one row per feature mentioned
-
-Run after collect.py:  python3 process.py
-"""
 import re
 from pathlib import Path
 

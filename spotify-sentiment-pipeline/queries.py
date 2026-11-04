@@ -1,9 +1,3 @@
-"""Read-only queries behind the dashboard.
-
-Every function returns a pandas DataFrame (or a plain value) built from
-data/spotify_reviews.db. Results are cached and refresh when the database
-file changes, so rerunning collect.py or process.py shows up on reload.
-"""
 import sqlite3
 from contextlib import closing
 from pathlib import Path
@@ -46,7 +40,6 @@ def read(sql, params=()):
 
 
 def status():
-    """Return None when the dashboard can run, else a message saying what to run."""
     if not DB.exists():
         return "No database yet. Run `python collect.py` first."
     tables = set(read("SELECT name FROM sqlite_master WHERE type = 'table'")["name"])
@@ -58,7 +51,6 @@ def status():
 
 
 def overview():
-    """One row per store, plus date range and negative share."""
     df = read(f"""
         SELECT source,
                COUNT(*) AS reviews,
@@ -75,7 +67,6 @@ def overview():
 
 
 def feature_stats(source):
-    """Mentions, negative count and negative share for each feature in one store."""
     df = read(f"""
         SELECT f.feature,
                COUNT(*) AS mentions,
@@ -93,7 +84,6 @@ def feature_stats(source):
 
 
 def baseline_neg_share(source):
-    """Negative share among reviews that mention none of the tracked features."""
     return float(read(f"""
         SELECT AVG({NEGATIVE}) AS share FROM reviews
         WHERE source = ?
@@ -102,7 +92,6 @@ def baseline_neg_share(source):
 
 
 def rating_split():
-    """Share of each star rating within each store."""
     df = read("""
         SELECT source, rating, COUNT(*) AS reviews
         FROM reviews GROUP BY source, rating""")
@@ -112,7 +101,6 @@ def rating_split():
 
 
 def daily(source="google_play"):
-    """Reviews and negative share per calendar day."""
     df = read(f"""
         SELECT date(review_date) AS day,
                COUNT(*) AS reviews,
@@ -125,7 +113,6 @@ def daily(source="google_play"):
 
 
 def versions(source="google_play", min_reviews=100):
-    """Negative share by app version, oldest to newest, for versions with enough reviews."""
     df = read(f"""
         SELECT app_version, COUNT(*) AS reviews, AVG({NEGATIVE}) AS neg_share,
                AVG(rating) AS avg_rating
@@ -139,7 +126,6 @@ def versions(source="google_play", min_reviews=100):
 
 
 def replies(source="google_play"):
-    """Share of reviews with a developer reply, by star rating."""
     return read("""
         SELECT rating, COUNT(*) AS reviews,
                SUM(developer_reply IS NOT NULL) AS replied,
@@ -149,7 +135,6 @@ def replies(source="google_play"):
 
 
 def reply_hours(source="google_play"):
-    """Hours between each review and its developer reply."""
     df = read("""
         SELECT review_date, developer_reply_date FROM reviews
         WHERE source = ? AND developer_reply_date IS NOT NULL""", (source,))
@@ -159,7 +144,6 @@ def reply_hours(source="google_play"):
 
 
 def negative_reviews(source, feature, limit=6):
-    """Most helpful negative reviews that mention a feature."""
     return read(f"""
         SELECT r.review_date, r.rating, r.thumbs_up, r.app_version, r.review_text
         FROM reviews r JOIN review_features f USING (review_id)
@@ -169,7 +153,6 @@ def negative_reviews(source, feature, limit=6):
 
 
 def sentiment_by_rating():
-    """Average VADER score per star rating, used in the method notes."""
     return read("""
         SELECT r.rating, AVG(s.sentiment) AS vader, COUNT(*) AS reviews
         FROM reviews r JOIN review_sentiment s USING (review_id)
@@ -177,7 +160,6 @@ def sentiment_by_rating():
 
 
 def tagged_share():
-    """Share of reviews that matched at least one feature rule."""
     return float(read("""
         SELECT AVG(review_id IN (SELECT review_id FROM review_features)) AS share
         FROM reviews""")["share"][0])

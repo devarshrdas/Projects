@@ -1,8 +1,3 @@
-"""Collect Spotify reviews from the Apple App Store (iTunes RSS) and Google Play.
-
-Writes data/reviews.csv and data/spotify_reviews.db (SQLite, table `reviews`).
-Usage: python3 collect.py [--play-count 5000]
-"""
 import argparse
 import csv
 import json
@@ -32,7 +27,7 @@ def fetch_apple(country="us"):
                    f"page={page}/id={APPLE_ID}/sortBy={sort}/json")
             try:
                 data = json.load(urllib.request.urlopen(url, timeout=30))
-            except Exception as exc:  # feed returns errors past the last page
+            except Exception as exc:
                 print(f"apple {sort} p{page}: stopped ({exc})")
                 break
             entries = data.get("feed", {}).get("entry", [])
@@ -40,7 +35,7 @@ def fetch_apple(country="us"):
                 entries = [entries]
             added = 0
             for e in entries:
-                if "im:rating" not in e:  # first entry can be app metadata
+                if "im:rating" not in e:
                     continue
                 rid = "apple_" + e["id"]["label"]
                 rows[rid] = {
