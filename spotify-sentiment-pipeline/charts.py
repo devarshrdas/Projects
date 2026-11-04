@@ -48,11 +48,11 @@ def feature_volume(df, highlight=2):
     x = alt.X("negative:Q", title=None, axis=None,
               scale=alt.Scale(domain=[0, d["negative"].max() * 1.15]))
     tooltip = [
-        alt.Tooltip("negative:Q", title="Negative reviews", format=","),
-        alt.Tooltip("label:N", title="Feature"),
-        alt.Tooltip("share_of_all_negative:Q", title="Share of all negative reviews", format=".0%"),
-        alt.Tooltip("mentions:Q", title="All reviews mentioning it", format=","),
-        alt.Tooltip("neg_share:Q", title="Of those, negative", format=".0%"),
+        alt.Tooltip("negative:Q", title="negative reviews", format=","),
+        alt.Tooltip("label:N", title="feature"),
+        alt.Tooltip("share_of_all_negative:Q", title="share of all negative reviews", format=".0%"),
+        alt.Tooltip("mentions:Q", title="all reviews mentioning it", format=","),
+        alt.Tooltip("neg_share:Q", title="of those, negative", format=".0%"),
     ]
     bars = alt.Chart(d).mark_bar(size=BAR, cornerRadiusEnd=4).encode(
         y=y, x=x,
@@ -78,10 +78,10 @@ def feature_severity(df, baseline, threshold=0.6, min_mentions=20):
                             labelFontSize=13, labelColor=INK, labelLimit=220))
     x = alt.X("neg_share:Q", title=None, axis=None, scale=alt.Scale(domain=[0, 1.1]))
     tooltip = [
-        alt.Tooltip("neg_share:Q", title="Negative", format=".0%"),
-        alt.Tooltip("label:N", title="Feature"),
-        alt.Tooltip("mentions:Q", title="Reviews mentioning it", format=","),
-        alt.Tooltip("negative:Q", title="Negative reviews", format=","),
+        alt.Tooltip("neg_share:Q", title="negative", format=".0%"),
+        alt.Tooltip("label:N", title="feature"),
+        alt.Tooltip("mentions:Q", title="reviews mentioning it", format=","),
+        alt.Tooltip("negative:Q", title="negative reviews", format=","),
     ]
     bars = alt.Chart(d).mark_bar(size=BAR, cornerRadiusEnd=4).encode(
         y=y, x=x,
@@ -93,7 +93,7 @@ def feature_severity(df, baseline, threshold=0.6, min_mentions=20):
         y=y, x=x, text="tip:N", tooltip=tooltip)
 
     base = pd.DataFrame({"x": [baseline],
-                         "text": [f"No feature mentioned: {baseline:.0%}"]})
+                         "text": [f"no feature mentioned: {baseline:.0%}"]})
     rule = alt.Chart(base).mark_rule(color=INK_2, strokeWidth=1).encode(x="x:Q")
     rule_label = alt.Chart(base).mark_text(
         align="left", dx=4, y=-12, fontSize=11, color=INK_2).encode(x="x:Q", text="text:N")
@@ -130,10 +130,10 @@ def rating_split(df, store_order):
                                                 if lo <= v / 10 <= hi],
                             labelExpr="format(abs(datum.value), '.0%')",
                             grid=True, domain=False, ticks=False))
-    tooltip = [alt.Tooltip("share:Q", title="Share", format=".1%"),
-               alt.Tooltip("stars:N", title="Rating"),
-               alt.Tooltip("reviews:Q", title="Reviews", format=","),
-               alt.Tooltip("store:N", title="Store")]
+    tooltip = [alt.Tooltip("share:Q", title="share", format=".1%"),
+               alt.Tooltip("stars:N", title="rating"),
+               alt.Tooltip("reviews:Q", title="reviews", format=","),
+               alt.Tooltip("store:N", title="store")]
     hover = alt.selection_point(on="pointerover", fields=["store", "rating"],
                                 empty=False, clear="pointerout")
     bars = alt.Chart(d).mark_bar(size=26, stroke=SURFACE, strokeWidth=2).encode(
@@ -162,16 +162,18 @@ def daily_trend(df, average):
     d = df.copy()
     d["tip"] = d["neg_share"].map("{:.0%}".format)
     d["is_last"] = d["day"] == d["day"].max()
+    d["day_label"] = d["day"].map(lambda t: f"{t:%b} {t.day}".lower())
     top = max(0.4, d["neg_share"].max() * 1.3)
     x = alt.X("day:T", title=None,
-              axis=alt.Axis(format="%b %-d", tickCount={"interval": "day", "step": 1},
+              axis=alt.Axis(labelExpr="lower(timeFormat(datum.value, '%b %-d'))", tickCount={"interval": "day", "step": 2},
+                            labelOverlap="greedy", labelSeparation=12,
                             grid=False, labelAngle=0, domainColor=AXIS, ticks=False))
     y = alt.Y("neg_share:Q", title=None, scale=alt.Scale(domain=[0, top]),
               axis=alt.Axis(format=".0%", tickCount=4, domain=False, ticks=False))
-    tooltip = [alt.Tooltip("neg_share:Q", title="Negative", format=".1%"),
-               alt.Tooltip("day:T", title="Day", format="%b %-d"),
-               alt.Tooltip("negative:Q", title="Negative reviews", format=","),
-               alt.Tooltip("reviews:Q", title="All reviews", format=",")]
+    tooltip = [alt.Tooltip("neg_share:Q", title="negative", format=".1%"),
+               alt.Tooltip("day_label:N", title="day"),
+               alt.Tooltip("negative:Q", title="negative reviews", format=","),
+               alt.Tooltip("reviews:Q", title="all reviews", format=",")]
     nearest = alt.selection_point(nearest=True, on="pointerover", fields=["day"],
                                   empty=False, clear="pointerout")
 
@@ -205,10 +207,10 @@ def version_compare(df):
                             domainColor=AXIS, labelPadding=8))
     y = alt.Y("neg_share:Q", title=None, axis=None,
               scale=alt.Scale(domain=[0, max(0.3, d["neg_share"].max() * 1.25)]))
-    tooltip = [alt.Tooltip("neg_share:Q", title="Negative", format=".1%"),
-               alt.Tooltip("app_version:N", title="Version"),
-               alt.Tooltip("reviews:Q", title="Reviews", format=","),
-               alt.Tooltip("avg_rating:Q", title="Average rating", format=".2f")]
+    tooltip = [alt.Tooltip("neg_share:Q", title="negative", format=".1%"),
+               alt.Tooltip("app_version:N", title="version"),
+               alt.Tooltip("reviews:Q", title="reviews", format=","),
+               alt.Tooltip("avg_rating:Q", title="average rating", format=".2f")]
     cols = alt.Chart(d).mark_bar(size=24, cornerRadiusEnd=4).encode(
         x=x, y=y,
         color=alt.condition("datum.emph", alt.value(ACCENT), alt.value(CONTEXT)),
@@ -230,10 +232,10 @@ def reply_rate(df):
                             domainColor=AXIS, labelPadding=8))
     y = alt.Y("reply_rate:Q", title=None, axis=None,
               scale=alt.Scale(domain=[0, max(0.5, d["reply_rate"].max() * 1.25)]))
-    tooltip = [alt.Tooltip("reply_rate:Q", title="Replied to", format=".1%"),
-               alt.Tooltip("stars:N", title="Rating"),
-               alt.Tooltip("replied:Q", title="Replies", format=","),
-               alt.Tooltip("reviews:Q", title="Reviews", format=",")]
+    tooltip = [alt.Tooltip("reply_rate:Q", title="replied to", format=".1%"),
+               alt.Tooltip("stars:N", title="rating"),
+               alt.Tooltip("replied:Q", title="replies", format=","),
+               alt.Tooltip("reviews:Q", title="reviews", format=",")]
     cols = alt.Chart(d).mark_bar(size=24, cornerRadiusEnd=4, color=ACCENT).encode(
         x=x, y=y, opacity=alt.condition(hover, alt.value(0.7), alt.value(1)),
         tooltip=tooltip).add_params(hover)

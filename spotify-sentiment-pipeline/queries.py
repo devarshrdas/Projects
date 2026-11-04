@@ -9,19 +9,19 @@ DB = Path(__file__).parent / "data" / "spotify_reviews.db"
 
 NEGATIVE = "rating <= 2"
 
-STORES = {"google_play": "Google Play", "app_store": "App Store"}
+STORES = {"google_play": "google play", "app_store": "app store"}
 
 FEATURE_LABELS = {
-    "pricing": "Pricing",
-    "ads": "Ads",
-    "crashes": "Crashes and bugs",
-    "ui_update": "Updates and UI",
-    "offline": "Offline and downloads",
-    "shuffle": "Shuffle",
-    "recommendations": "Recommendations",
-    "login": "Login and account",
-    "search": "Search",
-    "playback": "Playback",
+    "pricing": "pricing",
+    "ads": "ads",
+    "crashes": "crashes and bugs",
+    "ui_update": "updates and ui",
+    "offline": "offline and downloads",
+    "shuffle": "shuffle",
+    "recommendations": "recommendations",
+    "login": "login and account",
+    "search": "search",
+    "playback": "playback",
 }
 
 
@@ -41,12 +41,12 @@ def read(sql, params=()):
 
 def status():
     if not DB.exists():
-        return "No database yet. Run `python collect.py` first."
+        return "no database yet. run `python collect.py` first."
     tables = set(read("SELECT name FROM sqlite_master WHERE type = 'table'")["name"])
     if "reviews" not in tables:
-        return "The database has no reviews table. Run `python collect.py` first."
+        return "the database has no reviews table. run `python collect.py` first."
     if not {"review_sentiment", "review_features"} <= tables:
-        return "Reviews are not processed yet. Run `python process.py` first."
+        return "reviews are not processed yet. run `python process.py` first."
     return None
 
 
