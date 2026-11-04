@@ -11,10 +11,17 @@ st.set_page_config(page_title="Spotify review sentiment", layout="wide")
 st.markdown("""
 <style>
 .block-container {max-width: 1180px; padding-top: 2.5rem; padding-bottom: 4rem;}
-[data-testid="stMetricLabel"] p {color: #52514e; font-size: 0.85rem;}
-[data-testid="stMetricValue"] {font-weight: 600;}
-[data-testid="stCaptionContainer"] {color: #52514e;}
-h2 {margin-top: 1.75rem;}
+[data-testid="stMetric"] {background: #161615;}
+[data-testid="stMetricLabel"] p {color: #9a9890; font-size: 0.85rem;}
+[data-testid="stMetricValue"] {font-weight: 600; letter-spacing: -0.01em;}
+[data-testid="stCaptionContainer"] {color: #9a9890;}
+[data-testid="stExpander"] details {background: #121211;}
+h1 {letter-spacing: -0.02em;}
+h2 {margin-top: 1.75rem; letter-spacing: -0.01em;}
+#vg-tooltip-element {background: #1c1c1b !important; color: #f0efec !important;
+  border: 1px solid #2c2c2a !important; border-radius: 8px !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45) !important; font-family: system-ui, sans-serif !important;}
+#vg-tooltip-element td.key {color: #9a9890 !important;}
 </style>
 """, unsafe_allow_html=True)
 

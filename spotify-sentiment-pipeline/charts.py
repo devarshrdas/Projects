@@ -1,14 +1,15 @@
 import altair as alt
 import pandas as pd
 
-SURFACE = "#fcfcfb"
-INK = "#0b0b0b"
-INK_2 = "#52514e"
+SURFACE = "#0e0e0d"
+INK = "#f0efec"
+INK_2 = "#c3c2b7"
+INK_ON_BRIGHT = "#0e0e0d"
 MUTED = "#898781"
-GRID = "#e1e0d9"
-AXIS = "#c3c2b7"
-ACCENT = "#2a78d6"
-CONTEXT = "#c3c2b7"
+GRID = "#222220"
+AXIS = "#383835"
+ACCENT = "#3987e5"
+CONTEXT = "#57564f"
 FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
 BAR = 18
 ROW = 30
@@ -16,7 +17,7 @@ ROW = 30
 
 def finish(chart, height):
     return (
-        chart.properties(height=height, background=SURFACE,
+        chart.properties(height=height, background="transparent",
                          padding={"left": 6, "right": 16, "top": 24, "bottom": 6})
         .configure(font=FONT)
         .configure_view(stroke=None)
@@ -56,7 +57,7 @@ def feature_volume(df, highlight=2):
     bars = alt.Chart(d).mark_bar(size=BAR, cornerRadiusEnd=4).encode(
         y=y, x=x,
         color=alt.condition("datum.emph", alt.value(ACCENT), alt.value(CONTEXT)),
-        opacity=alt.condition(hover, alt.value(0.75), alt.value(1)),
+        opacity=alt.condition(hover, alt.value(0.7), alt.value(1)),
         tooltip=tooltip,
     ).add_params(hover)
     labels = alt.Chart(d).mark_text(align="left", dx=6, fontSize=12, color=INK_2).encode(
@@ -85,7 +86,7 @@ def feature_severity(df, baseline, threshold=0.6, min_mentions=20):
     bars = alt.Chart(d).mark_bar(size=BAR, cornerRadiusEnd=4).encode(
         y=y, x=x,
         color=alt.condition("datum.emph", alt.value(ACCENT), alt.value(CONTEXT)),
-        opacity=alt.condition(hover, alt.value(0.75), alt.value(1)),
+        opacity=alt.condition(hover, alt.value(0.7), alt.value(1)),
         tooltip=tooltip,
     ).add_params(hover)
     labels = alt.Chart(d).mark_text(align="left", dx=6, fontSize=12, color=INK_2).encode(
@@ -100,7 +101,7 @@ def feature_severity(df, baseline, threshold=0.6, min_mentions=20):
 
 
 STARS = ["1 star", "2 stars", "3 stars", "4 stars", "5 stars"]
-STAR_COLORS = ["#c63b3a", "#ef9c9a", "#e1e0d9", "#86b6ef", "#2a78d6"]
+STAR_COLORS = ["#e66767", "#a13a39", "#34332f", "#1c5cab", "#3987e5"]
 
 
 def rating_split(df, store_order):
@@ -145,14 +146,15 @@ def rating_split(df, store_order):
         tooltip=tooltip,
     ).add_params(hover)
     fits = alt.datum.share >= 0.07
-    dark = alt.FieldOneOfPredicate(field="rating", oneOf=[1, 5])
-    text_on_dark = alt.Chart(d).transform_filter(fits).transform_filter(dark).mark_text(
-        fontSize=12, color="#ffffff").encode(y=y, x="mid:Q", text="tip:N", tooltip=tooltip)
-    text_on_light = alt.Chart(d).transform_filter(fits).transform_filter(
-        {"not": dark}).mark_text(fontSize=12, color=INK).encode(
+    bright = alt.FieldOneOfPredicate(field="rating", oneOf=[1, 5])
+    text_on_bright = alt.Chart(d).transform_filter(fits).transform_filter(bright).mark_text(
+        fontSize=12, color=INK_ON_BRIGHT, fontWeight=600).encode(
         y=y, x="mid:Q", text="tip:N", tooltip=tooltip)
-    zero = alt.Chart(pd.DataFrame({"x": [0]})).mark_rule(color=INK_2, strokeWidth=1).encode(x="x:Q")
-    return finish(zero + bars + text_on_dark + text_on_light,
+    text_on_dim = alt.Chart(d).transform_filter(fits).transform_filter(
+        {"not": bright}).mark_text(fontSize=12, color=INK).encode(
+        y=y, x="mid:Q", text="tip:N", tooltip=tooltip)
+    zero = alt.Chart(pd.DataFrame({"x": [0]})).mark_rule(color=MUTED, strokeWidth=1).encode(x="x:Q")
+    return finish(zero + bars + text_on_bright + text_on_dim,
                   height=len(store_order) * 52 + 90)
 
 
@@ -210,7 +212,7 @@ def version_compare(df):
     cols = alt.Chart(d).mark_bar(size=24, cornerRadiusEnd=4).encode(
         x=x, y=y,
         color=alt.condition("datum.emph", alt.value(ACCENT), alt.value(CONTEXT)),
-        opacity=alt.condition(hover, alt.value(0.75), alt.value(1)),
+        opacity=alt.condition(hover, alt.value(0.7), alt.value(1)),
         tooltip=tooltip,
     ).add_params(hover)
     labels = alt.Chart(d).mark_text(dy=-8, fontSize=12, color=INK_2).encode(
@@ -233,7 +235,7 @@ def reply_rate(df):
                alt.Tooltip("replied:Q", title="Replies", format=","),
                alt.Tooltip("reviews:Q", title="Reviews", format=",")]
     cols = alt.Chart(d).mark_bar(size=24, cornerRadiusEnd=4, color=ACCENT).encode(
-        x=x, y=y, opacity=alt.condition(hover, alt.value(0.75), alt.value(1)),
+        x=x, y=y, opacity=alt.condition(hover, alt.value(0.7), alt.value(1)),
         tooltip=tooltip).add_params(hover)
     labels = alt.Chart(d).mark_text(dy=-8, fontSize=12, color=INK_2).encode(
         x=x, y=y, text="tip:N", tooltip=tooltip)
