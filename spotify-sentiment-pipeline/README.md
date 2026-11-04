@@ -26,6 +26,8 @@ python -m streamlit run app.py
 
 if `python` isn't found on windows, use `py` instead. on mac or linux, use `python3`.
 
+the first `collect.py` run pulls up to `--play-count` google play reviews, which takes about 12 seconds for 30,000. after that, running `python collect.py` only adds reviews newer than the ones already stored, usually in a second or two. run `python process.py` again after each update. to start over, use `python collect.py --full --play-count 30000`.
+
 ## files
 
 - `collect.py` pulls reviews into `data/spotify_reviews.db` (table `reviews`)
@@ -49,6 +51,6 @@ every chart has a "view data" table under it
 ## notes
 
 - negative means 1 or 2 stars
-- the app store feed caps at about 500 reviews per sort order, so its time series is thin
+- the app store feed caps at about 500 reviews per sort order, so its time series is thin. updates keep adding to it over time
 - keyword rules tag about a third of reviews. zero-shot classification would cover more
 - only `data/sample_reviews.csv` is committed. run `collect.py` for the full set

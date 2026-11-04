@@ -50,7 +50,8 @@ def render_header(ov):
     st.caption(
         f"{total:,} app reviews. google play: {int(gp.reviews):,} reviews from "
         f"{fmt_day(gp.first_date)} to {fmt_day(gp.last_date)}, {gp.last_date.year}. "
-        f"app store: the 500 newest and 500 most helpful reviews."
+        f"app store: {int(ov.set_index('source').loc['app_store', 'reviews']):,} of the newest "
+        f"and most helpful reviews."
     )
 
     avg = (ov["avg_rating"] * ov["reviews"]).sum() / total
